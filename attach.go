@@ -25,7 +25,7 @@ func main() {
 	raw := makeraw(*saved)
 	tcset(os.Stdin.Fd(), &raw)
 
-	conn, err := net.Dial("tcp", os.Argv[1])
+	conn, err := net.Dial("tcp", os.Args[1])
 	if err != nil {
 		panic(err)
 	}

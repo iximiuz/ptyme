@@ -1,7 +1,7 @@
-.PHONY
+.PHONY:
 shim:
 	cc -Wall -std=c99 shim.c -o build/shim
 
-.PHONY
+.PHONY:
 attach:
-	go run attach.go
+	go run attach.go ${SOCK}

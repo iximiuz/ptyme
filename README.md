@@ -23,3 +23,20 @@ Client:   |
 The idea is simple: we want to start an arbitrary executable in background (i.e. as a daemon), but keep its STDIN/STDOUT bound to a controlling terminal to be able to connect to it later on. For that we need a tiny piece of software called _a shim_ (<a href="https://github.com/iximiuz/ptyme/blob/master/shim.c">shim.c</a>). The shim creates a pseudoterminal and `fork/exec`-s a given executable binding its standard streams to the slave side of the pseudoterminal pair. At the same time the parent process keeps reading and writing the master end of the pair. The parent process also starts listening on TCP port. Each byte read from an incomming connection is then forwarded to a master side of the terminal. And other way around - each byte read from the master end of the pseudoterminal has to be written to each incomming connection (i.e. broadcasted).
 
 Simplistic client can be found in <a href="https://github.com/iximiuz/ptyme/blob/master/attach.go">attach.go</a>. Since the controlling (i.e. escape sequence handling, etc) of user interaction is done by the pseudoterminal on the server side, the client sets its controlling terminal to RAW mode and then just blindly forwards bytes from its STDIN to a socket connection and from the connection to its STDOUT.
+
+## Try it out:
+
+```bash
+$ make shim
+$ ./build/shim 43210 /usr/bin/ping ya.ru
+
+$ make attach SOCK=localhost:43210
+
+> 64 bytes from ya.ru (87.250.250.242): icmp_seq=154 ttl=63 time=36.4 ms
+> 64 bytes from ya.ru (87.250.250.242): icmp_seq=155 ttl=63 time=38.4 ms
+> 64 bytes from ya.ru (87.250.250.242): icmp_seq=156 ttl=63 time=41.7 ms
+> ^C
+> --- ya.ru ping statistics ---
+> 187 packets transmitted, 187 received, 0% packet loss, time 187058ms
+> rtt min/avg/max/mdev = 35.013/39.285/93.060/6.794 ms
+```
